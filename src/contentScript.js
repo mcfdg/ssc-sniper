@@ -1,43 +1,63 @@
 'use strict';
 
-// Content script file will run in the context of web page.
-// With content script you can manipulate the web pages using
-// Document Object Model (DOM).
-// You can also pass information to the parent extension.
+/**
+ * Attempts to open details window of a slot with the target time.
+ * @param {string} targetTime - The target time to book.
+ * @returns {boolean} Returns true if the slot was successfully booked, false otherwise.
+ */
+function attemptBooking(targetTime) {
+  const bookableSlots = document.querySelectorAll(
+    '[data-test-id="bookable-slot-list"]'
+  );
 
-// We execute this script by making an entry in manifest.json file
-// under `content_scripts` property
+  let success = false;
 
-// For more information on Content Scripts,
-// See https://developer.chrome.com/extensions/content_scripts
+  // Loop through all bookable slots and attempt to open the details window of the slot with the target time
+  bookableSlots.forEach((slot) => {
+    const startTime = slot.querySelector(
+      '[data-test-id="bookable-slot-start-time"] strong'
+    ).textContent;
 
-// Log `title` of current active web page
-const pageTitle = document.head.getElementsByTagName('title')[0].innerHTML;
-console.log(
-  `Page title is: '${pageTitle}' - evaluated by Chrome extension's 'contentScript.js' file`
-);
+    if (startTime === targetTime) {
+      const button = slot.querySelector(
+        '[data-test-id="bookable-slot-book-button"]'
+      );
 
-// Communicate with background file by sending a message
-chrome.runtime.sendMessage(
-  {
-    type: 'GREETINGS',
-    payload: {
-      message: 'Hello, my name is Con. I am from ContentScript.',
-    },
-  },
-  (response) => {
-    console.log(response.message);
-  }
-);
+      if (button) {
+        // Opens the details window
+        button.click();
+        success = true;
+      } // Else, already booked or not available
+    }
+  });
+
+  return success;
+}
 
 // Listen for message
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'COUNT') {
-    console.log(`Current count is ${request.payload.count}`);
+  if (request.type === 'ATTEMPT_BOOKING') {
+    let success = attemptBooking(request.payload.targetTime);
+
+    sendResponse({
+      payload: {
+        success: success,
+      },
+    });
+    return true;
   }
 
-  // Send an empty response
-  // See https://github.com/mozilla/webextension-polyfill/issues/130#issuecomment-531531890
   sendResponse({});
   return true;
 });
+
+// Attempt to book every second. Any details window that can be booked will be booked.
+setInterval(() => {
+  const bookButton = document.querySelector(
+    '[data-test-id="details-book-button"]'
+  );
+
+  if (bookButton) {
+    bookButton.click();
+  }
+}, 1000);

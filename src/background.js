@@ -1,21 +1,53 @@
 'use strict';
 
-// With background scripts you can communicate with popup
-// and contentScript files.
-// For more information on background script,
-// See https://developer.chrome.com/extensions/background_pages
+const LOAD_TIME = 3000;
+const RELOAD_TIME = 10000;
+
+let refreshInterval;
+let targetTime;
+
+/**
+ * Reloads the specified tab and sends a message to attempt booking at the target time.
+ * @param {chrome.tabs.Tab} tab - The tab to reload and send the message to.
+ * @param {number} targetTime - The target time for booking.
+ */
+function reloadAndSnipe(tab, targetTime) {
+  chrome.tabs.reload(tab.id);
+
+  setTimeout(() => {
+    chrome.tabs.sendMessage(
+      tab.id,
+      { type: 'ATTEMPT_BOOKING', payload: { targetTime } },
+      (response) => {
+        if (response.payload.success) clearInterval(refreshInterval);
+      }
+    );
+  }, LOAD_TIME);
+}
+
+/**
+ * Starts the sniping process.
+ * @param {number} targetTime - The target time for sniping.
+ */
+function startSniping(targetTime) {
+  chrome.tabs.query(
+    { active: true, currentWindow: true },
+    async function (tabs) {
+      var tab = tabs[0];
+
+      reloadAndSnipe(tab, targetTime);
+
+      if (refreshInterval) clearInterval(refreshInterval);
+
+      refreshInterval = setInterval(async () => {
+        reloadAndSnipe(tab, targetTime);
+      }, RELOAD_TIME);
+    }
+  );
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'GREETINGS') {
-    const message = `Hi ${
-      sender.tab ? 'Con' : 'Pop'
-    }, my name is Bac. I am from Background. It's great to hear from you.`;
-
-    // Log message coming from the `request` parameter
-    console.log(request.payload.message);
-    // Send a response message
-    sendResponse({
-      message,
-    });
+  if (request.type === 'START_SNIPING') {
+    startSniping(request.payload.targetTime);
   }
 });
