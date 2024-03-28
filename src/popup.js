@@ -4,6 +4,9 @@ import './popup.css';
 
 (function () {
   // check if current tab is from https://dms.studentensportcentrumeindhoven.nl/*
+
+  let isSniping = false;
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const url = tabs[0].url;
 
@@ -35,8 +38,25 @@ import './popup.css';
     }
   });
 
+  chrome.runtime.sendMessage(
+    {
+      type: 'CHECK_SNIPING_STATUS',
+    },
+    (response) => {
+      console.log('response', response.payload.isSniping);
+      isSniping = response.payload.isSniping;
+      if (isSniping) {
+        document.getElementById('stopBtn').removeAttribute('disabled');
+      }
+    }
+  );
+
   document.getElementById('submitBtn').addEventListener('click', () => {
     const targetTime = document.getElementById('targetTime').value;
+
+    isSniping = true;
+
+    document.getElementById('stopBtn').removeAttribute('disabled');
 
     chrome.runtime.sendMessage({
       type: 'START_SNIPING',
@@ -44,5 +64,13 @@ import './popup.css';
         targetTime,
       },
     });
+  });
+
+  document.getElementById('stopBtn').addEventListener('click', () => {
+    chrome.runtime.sendMessage({
+      type: 'STOP_SNIPING',
+    });
+
+    document.getElementById('stopBtn').setAttribute('disabled', 'disabled');
   });
 })();

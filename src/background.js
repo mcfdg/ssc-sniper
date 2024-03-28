@@ -19,7 +19,10 @@ function reloadAndSnipe(tab, targetTime) {
       tab.id,
       { type: 'ATTEMPT_BOOKING', payload: { targetTime } },
       (response) => {
-        if (response.payload.success) clearInterval(refreshInterval);
+        if (response.payload.success) {
+          clearInterval(refreshInterval);
+          refreshInterval = null;
+        }
       }
     );
   }, LOAD_TIME);
@@ -46,8 +49,21 @@ function startSniping(targetTime) {
   );
 }
 
+function stopSniping() {
+  clearInterval(refreshInterval);
+  refreshInterval = null;
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'START_SNIPING') {
     startSniping(request.payload.targetTime);
+  } else if (request.type === 'STOP_SNIPING') {
+    stopSniping();
+  } else if (request.type === 'CHECK_SNIPING_STATUS') {
+    sendResponse({
+      payload: {
+        isSniping: !!refreshInterval,
+      },
+    });
   }
 });
