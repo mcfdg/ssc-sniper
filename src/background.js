@@ -20,8 +20,7 @@ function reloadAndSnipe(tab, targetTime) {
       { type: 'ATTEMPT_BOOKING', payload: { targetTime } },
       (response) => {
         if (response.payload.success) {
-          clearInterval(refreshInterval);
-          refreshInterval = null;
+          stopSniping();
         }
       }
     );

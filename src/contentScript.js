@@ -1,5 +1,7 @@
 'use strict';
 
+let isSniping = false;
+
 /**
  * Attempts to open details window of a slot with the target time.
  * @param {string} targetTime - The target time to book.
@@ -39,6 +41,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'ATTEMPT_BOOKING') {
     let success = attemptBooking(request.payload.targetTime);
 
+    isSniping = true;
+
     sendResponse({
       payload: {
         success: success,
@@ -53,11 +57,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Attempt to book every second. Any details window that can be booked will be booked.
 setInterval(() => {
+  if (!isSniping) return;
+
   const bookButton = document.querySelector(
     '[data-test-id="details-book-button"]'
   );
 
   if (bookButton) {
     bookButton.click();
+    isSniping = false;
   }
 }, 1000);
