@@ -21,6 +21,13 @@ function reloadAndSnipe(tab, targetTime) {
       (response) => {
         if (response.payload.success) {
           stopSniping();
+
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icons/icon_128.png',
+            title: 'Booking successful',
+            message: `Successfully booked slot at ${targetTime}`,
+          });
         }
       }
     );
