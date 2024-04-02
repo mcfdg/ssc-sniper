@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Ssc Sniper",
+  "name": "SSC Sniper",
   "version": "0.1.0",
-  "description": "My Chrome Extension",
+  "description": "Book anything, even if it's full!",
   "icons": {
     "16": "icons/icon_16.png",
     "32": "icons/icon_32.png",
@@ -13,7 +13,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Ssc Sniper",
+    "default_title": "SSC Sniper",
     "default_popup": "popup.html"
   },
   "permissions": [
