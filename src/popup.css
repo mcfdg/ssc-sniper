@@ -75,6 +75,18 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.wrong-page-message {
-  font-size: medium;
+.wrong-page-button {
+  padding: 10px 20px;
+  width: 130px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 5px;
+  background-color: #377dff;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.wrong-page-button:hover {
+  background-color: #6198ff;
 }

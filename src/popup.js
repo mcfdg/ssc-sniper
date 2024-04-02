@@ -16,9 +16,14 @@ import './popup.css';
       )
     ) {
       const parent = document.getElementsByClassName('app')[0];
-      const message = document.createElement('p');
-      message.classList.add('wrong-page-message');
-      message.textContent = 'Open the booking page first.';
+      const message = document.createElement('button');
+      message.classList.add('wrong-page-button');
+      message.textContent = 'Open booking page';
+      message.onclick = () => {
+        chrome.tabs.create({
+          url: 'https://dms.studentensportcentrumeindhoven.nl/products/bookable-product-schedule',
+        });
+      };
       parent.innerHTML = '';
       parent.appendChild(message);
       return;
