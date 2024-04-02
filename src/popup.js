@@ -30,19 +30,6 @@ import './popup.css';
     }
   });
 
-  // if targetTime input changes and is valid, enable submit button
-  document.getElementById('targetTime').addEventListener('input', () => {
-    const targetTime = document.getElementById('targetTime').value;
-
-    console.log(targetTime);
-
-    if (/^\d{2}:\d{2}$/.test(targetTime)) {
-      document.getElementById('submitBtn').removeAttribute('disabled');
-    } else {
-      document.getElementById('submitBtn').setAttribute('disabled', 'disabled');
-    }
-  });
-
   chrome.runtime.sendMessage(
     {
       type: 'CHECK_SNIPING_STATUS',
@@ -57,7 +44,7 @@ import './popup.css';
   );
 
   document.getElementById('submitBtn').addEventListener('click', () => {
-    const targetTime = document.getElementById('targetTime').value;
+    let targetTime = document.getElementById('dropdown').value;
 
     isSniping = true;
 
@@ -77,5 +64,33 @@ import './popup.css';
     });
 
     document.getElementById('stopBtn').setAttribute('disabled', 'disabled');
+  });
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(
+      tabs[0].id,
+      { type: 'GET_FULL_SLOTS' },
+      (response) => {
+        const fullSlots = response.payload.fullSlots;
+        console.log('fullSlots', fullSlots);
+
+        // get element with id listContainer
+        const listContainer = document.getElementById('listContainer');
+
+        // create dropdown list with full slots
+        const dropdown = document.createElement('select');
+        dropdown.id = 'dropdown';
+        dropdown.classList.add('dropdown');
+
+        fullSlots.forEach((slot) => {
+          const option = document.createElement('option');
+          option.value = slot.time;
+          option.textContent = slot.time + ' ' + slot.name;
+          dropdown.appendChild(option);
+        });
+
+        listContainer.appendChild(dropdown);
+      }
+    );
   });
 })();

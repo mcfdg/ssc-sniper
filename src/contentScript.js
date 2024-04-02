@@ -38,6 +38,7 @@ function attemptBooking(targetTime) {
 
 // Listen for message
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('request', request);
   if (request.type === 'ATTEMPT_BOOKING') {
     let success = attemptBooking(request.payload.targetTime);
 
@@ -46,6 +47,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({
       payload: {
         success: success,
+      },
+    });
+    return true;
+  } else if (request.type === 'GET_FULL_SLOTS') {
+    console.log('GET_FULL_SLOTS');
+    const bookableSlots = document.querySelectorAll(
+      '[data-test-id="bookable-slot-list"]'
+    );
+
+    const fullSlots = [];
+
+    // Loop through all bookable slots and attempt to open the details window of the slot with the target time
+    bookableSlots.forEach((slot) => {
+      const fullSlot = {};
+
+      const startTime = slot.querySelector(
+        '[data-test-id="bookable-slot-start-time"] strong'
+      ).textContent;
+
+      fullSlot.time = startTime;
+
+      const name = slot.querySelector(
+        '[data-test-id="bookable-slot-linked-product-description"]'
+      ).textContent;
+
+      fullSlot.name = name;
+
+      fullSlots.push(fullSlot);
+    });
+
+    sendResponse({
+      payload: {
+        fullSlots: fullSlots,
       },
     });
     return true;

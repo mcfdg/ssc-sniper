@@ -90,3 +90,15 @@ button:disabled {
 .wrong-page-button:hover {
   background-color: #6198ff;
 }
+
+select {
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+select:focus {
+  outline: none;
+  border-color: #1e2022;
+}
