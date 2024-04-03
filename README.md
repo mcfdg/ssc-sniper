@@ -3,6 +3,7 @@
 It's never too late to book! This extension allows you to book any full slot.
 
 ![](images/image.png)
+
 _This is what the extension looks like_
 
 ## How it works
