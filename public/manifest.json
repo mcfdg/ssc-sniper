@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "SSC Sniper",
-  "version": "0.1.0",
-  "description": "Book any slot, even if it's full!",
+  "version": "1.0.0",
+  "description": "It's never too late to book! This extension allows you to book any full slot.",
   "icons": {
     "16": "icons/icon_16.png",
     "32": "icons/icon_32.png",
