@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SSC Sniper",
   "version": "0.1.0",
-  "description": "Book anything, even if it's full!",
+  "description": "Book any slot, even if it's full!",
   "icons": {
     "16": "icons/icon_16.png",
     "32": "icons/icon_32.png",
@@ -17,8 +17,8 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "storage",
-    "tabs"
+    "tabs",
+    "notifications"
   ],
   "content_scripts": [
     {
