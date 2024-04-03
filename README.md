@@ -1,5 +1,7 @@
 # <img src="public/icons/icon_48.png" width="45" align="left"> SSC Sniper
 
+> Made for [SSC (Student Sports Centre) Eindhoven](https://ssceindhoven.tue.nl/)
+
 It's never too late to book! This extension allows you to book any full slot.
 
 ![](images/image.png)
