@@ -1,18 +1,15 @@
 'use strict';
 
 let isSniping = false;
+let targetTime;
+let attemptedBooking = false;
+let booked = false;
 
-/**
- * Attempts to open details window of a slot with the target time.
- * @param {string} targetTime - The target time to book.
- * @returns {boolean} Returns true if the slot was successfully booked, false otherwise.
- */
-function attemptBooking(targetTime) {
+function attemptBooking() {
+  attemptedBooking = true;
   const bookableSlots = document.querySelectorAll(
     '[data-test-id="bookable-slot-list"]'
   );
-
-  let success = false;
 
   // Loop through all bookable slots and attempt to open the details window of the slot with the target time
   bookableSlots.forEach((slot) => {
@@ -28,30 +25,30 @@ function attemptBooking(targetTime) {
       if (button) {
         // Opens the details window
         button.click();
+        chrome.runtime.sendMessage({ type: 'SUCCESFULLY_BOOKED' });
         success = true;
-      } // Else, already booked or not available
+      } else {
+        // Already booked or not available
+        reload();
+        console.log('Already booked or not available');
+      }
     }
   });
-
-  return success;
 }
+
+function reload() {
+  location.reload();
+}
+
+// send message to ask if sniping is true
+chrome.runtime.sendMessage({ type: 'IS_SNIPING' }, (response) => {
+  isSniping = response.payload.isSniping;
+  targetTime = response.payload.targetTime;
+});
 
 // Listen for message
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('request', request);
-  if (request.type === 'ATTEMPT_BOOKING') {
-    let success = attemptBooking(request.payload.targetTime);
-
-    isSniping = true;
-
-    sendResponse({
-      payload: {
-        success: success,
-      },
-    });
-    return true;
-  } else if (request.type === 'GET_FULL_SLOTS') {
-    console.log('GET_FULL_SLOTS');
+  if (request.type === 'GET_FULL_SLOTS') {
     const bookableSlots = document.querySelectorAll(
       '[data-test-id="bookable-slot-list"]'
     );
@@ -83,22 +80,56 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
     });
     return true;
+  } else if (request.type === 'START_SNIPING') {
+    isSniping = true;
+    targetTime = request.payload.targetTime;
+    console.log('targetTime', targetTime);
+    reload();
+    sendResponse({});
+    return true;
   }
 
   sendResponse({});
   return true;
 });
 
-// Attempt to book every second. Any details window that can be booked will be booked.
-setInterval(() => {
-  if (!isSniping) return;
-
-  const bookButton = document.querySelector(
-    '[data-test-id="details-book-button"]'
+if (isSniping) {
+  const bookableSlotListLoaded1 = document.querySelector(
+    '[data-test-id="bookable-slot-list"]'
   );
 
-  if (bookButton) {
-    bookButton.click();
-    isSniping = false;
+  if (bookableSlotListLoaded1) {
+    attemptBooking();
   }
-}, 1000);
+}
+
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (!booked) {
+      const bookButton = document.querySelector(
+        '[data-test-id="details-book-button"]'
+      );
+
+      if (bookButton) {
+        bookButton.click();
+        isSniping = false;
+        booked = true;
+      }
+    }
+
+    if (!attemptedBooking && isSniping) {
+      const bookableSlotListLoaded2 = document.querySelector(
+        '[data-test-id="bookable-slot-list"]'
+      );
+
+      if (bookableSlotListLoaded2) {
+        attemptBooking();
+      }
+    }
+  });
+});
+
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+});
